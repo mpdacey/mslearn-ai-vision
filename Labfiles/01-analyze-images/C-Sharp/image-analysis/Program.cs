@@ -145,7 +145,38 @@ namespace image_analysis
         static async Task BackgroundForeground(string imageFile, string endpoint, string key)
         {
             // Remove the background from the image or generate a foreground matte
-            
+            Console.WriteLine($" Background removal:");
+            // Define the API version and mode
+            string apiVersion = "2023-02-01-preview";
+            string mode = "backgroundRemoval"; // Can be foregroundMatting or backgroundRemoval
+
+            string url = $"computervision/imageanalysis:segment?api-version={apiVersion}&mode={mode}";
+
+            // Make the REST call
+            using (var client = new HttpClient())
+            {
+                var contentType = new MediaTypeWithQualityHeaderValue("application/json");
+                client.BaseAddress = new Uri(endpoint);
+                client.DefaultRequestHeaders.Accept.Add(contentType);
+                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", key);
+
+                var data = new
+                {
+                    url="https://github.com/MicrosoftLearning/mslearn-ai-vision/blob/main/Labfiles/01-analyze-images/Python/image-analysis/images/person.jpg?raw=true"
+                };
+
+                var jsonData = JsonSerializer.Serialize(data);
+                StringContent contentData = new(jsonData, Encoding.UTF8, contentType);
+                var response = await client.PostAsync(url, contentData);
+
+                if(response.IsSuccessStatusCode) 
+                {
+                    File.WriteAllBytes("background.png", response.Content.ReadAsByteArrayAsync().Result);
+                    Console.WriteLine("  Results saved in background.png\n");
+                }
+                else
+                    Console.WriteLine($"API error: {response.ReasonPhrase} - Check your body url, key, and endpoint.");
+            }
         }
     }
 }
