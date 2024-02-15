@@ -2,3 +2,4 @@ obj
 bin
 **/[Dd]ebug/**
 **.cache
+**/appsettings.json
