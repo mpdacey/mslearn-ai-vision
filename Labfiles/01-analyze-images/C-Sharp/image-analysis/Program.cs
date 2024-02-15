@@ -86,6 +86,36 @@ namespace image_analysis
                 foreach(DetectedTag tag in result.Tags.Values)
                     Console.WriteLine($"    '{tag.Name}', Confidence: {tag.Confidence:F2}");
             }
+
+            // Get objects in the image
+            if(result.Objects.Values.Count > 0)
+            {
+                Console.WriteLine(" Objects:");
+
+                // Prepare image for drawing
+                stream.Close();
+                Image image = Image.FromFile(imageFile);
+                Graphics graphics = Graphics.FromImage(image);
+                Pen pen = new(Color.MediumVioletRed, 3);
+                Font font = new("Impact", 14);
+                SolidBrush brush = new(Color.MediumVioletRed);
+
+                foreach (DetectedObject detectedObject in result.Objects.Values)
+                {
+                    Console.WriteLine($"    \"{detectedObject.Tags[0].Name}\"");
+
+                    // Draw object bounding box
+                    var box = detectedObject.BoundingBox;
+                    Rectangle rect = new(box.X,box.Y,box.Width,box.Height);
+                    graphics.DrawRectangle(pen, rect);
+                    graphics.DrawString(detectedObject.Tags[0].Name, font, brush, box.X, box.Y);
+                }
+
+                // Save annotated image
+                string output_file = "object.jpg";
+                image.Save(output_file);
+                Console.WriteLine($"  Results saved in {output_file}\n");
+            }
         }
         static async Task BackgroundForeground(string imageFile, string endpoint, string key)
         {
