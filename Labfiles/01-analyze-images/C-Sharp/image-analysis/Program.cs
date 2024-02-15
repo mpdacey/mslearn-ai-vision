@@ -116,6 +116,31 @@ namespace image_analysis
                 image.Save(output_file);
                 Console.WriteLine($"  Results saved in {output_file}\n");
             }
+
+            // Get people in the image
+            if(result.People.Values.Count > 0)
+            {
+                Console.WriteLine(" People:");
+
+                // Prepare image for drawing
+                stream.Close();
+                Image image = Image.FromFile(imageFile);
+                Graphics graphics = Graphics.FromImage(image);
+                Pen pen = new(Color.MediumVioletRed, 3);
+
+                foreach (DetectedPerson detectedObject in result.People.Values)
+                {
+                    // Draw person bounding box
+                    var box = detectedObject.BoundingBox;
+                    Rectangle rect = new(box.X,box.Y,box.Width,box.Height);
+                    graphics.DrawRectangle(pen, rect);
+                }
+
+                // Save annotated image
+                string output_file = "persons.jpg";
+                image.Save(output_file);
+                Console.WriteLine($"  Results saved in {output_file}\n");
+            }
         }
         static async Task BackgroundForeground(string imageFile, string endpoint, string key)
         {
