@@ -93,9 +93,27 @@ namespace read_text
                     var drawLinePolygon = true;
 
                     // Return each line detected in the image and the position bounding box around each line
+                    Console.WriteLine($"   Bounding Polygon: [{string.Join(" ", line.BoundingPolygon)}]");
 
                     // Return each word detected in the image position bounding box around each word with the confidence level of each word
-                
+                    foreach (DetectedTextWord word in line.Words)
+                    {
+                        Console.WriteLine($"    Word: '{word.Text}', Confidence {word.Confidence:F4}, Bounding Polygon: [{string.Join(" ", word.BoundingPolygon)}]");
+                    
+                        // Draw word bounding polygon
+                        drawLinePolygon = false;
+                        var box = line.BoundingPolygon;
+
+                        Point[] polygonPoints = {
+                            new Point(box[0].X, box[0].Y),
+                            new Point(box[1].X, box[1].Y),
+                            new Point(box[2].X, box[2].Y),
+                            new Point(box[3].X, box[3].Y),
+                        };
+
+                        graphics.DrawPolygon(pen, polygonPoints);
+                    }
+
                     // Draw line bounding polygon
                     if (drawLinePolygon)
                     {
