@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Azure;
 
 // Import namespaces
-
+using Azure.AI.Vision.ImageAnalysis;
 
 namespace read_text
 {
@@ -27,7 +27,9 @@ namespace read_text
                 string aiSvcKey = configuration["AIServicesKey"];
 
                 // Authenticate Azure AI Vision client
-
+                ImageAnalysisClient client = new(
+                    new Uri(aiSvcEndpoint),
+                    new AzureKeyCredential(aiSvcKey));
 
                 // Menu for text reading functions
                 Console.WriteLine("\n1: Use Read API for image (Lincoln.jpg)\n2: Read handwriting (Note.jpg)\nAny other key to quit\n");
@@ -65,8 +67,56 @@ namespace read_text
                                                      FileMode.Open);
 
             // Use Analyze image function to read text in image
-            
+            ImageAnalysisResult result = client.Analyze(
+                BinaryData.FromStream(stream),
+                // Specified features to be retrieved
+                VisualFeatures.Read);
     
+            stream.Close();
+
+            // Display analysis results
+            if (result.Read != null)
+            {
+                Console.WriteLine("Text:");
+
+                // Prepare image for drawing
+                Image image = Image.FromFile(imageFile);
+                Graphics graphics = Graphics.FromImage(image);
+                Pen pen = new(Color.Cyan, 3);
+
+                foreach (var line in result.Read.Blocks.SelectMany(block => block.Lines))
+                {
+                    // Return the text detected in the image
+                    Console.WriteLine($"   '{line.Text}'");
+
+                    // Draw bounding box around line
+                    var drawLinePolygon = true;
+
+                    // Return each line detected in the image and the position bounding box around each line
+
+                    // Return each word detected in the image position bounding box around each word with the confidence level of each word
+                
+                    // Draw line bounding polygon
+                    if (drawLinePolygon)
+                    {
+                        var box = line.BoundingPolygon;
+
+                        Point[] polygonPoints = {
+                            new Point(box[0].X, box[0].Y),
+                            new Point(box[1].X, box[1].Y),
+                            new Point(box[2].X, box[2].Y),
+                            new Point(box[3].X, box[3].Y),
+                        };
+
+                        graphics.DrawPolygon(pen, polygonPoints);
+                    }
+                }
+
+                // Save image
+                string outputFile = "text.jpg";
+                image.Save(outputFile);
+                Console.WriteLine($"\nResults saved in {outputFile}\n");
+            }
         }
     }
 }
